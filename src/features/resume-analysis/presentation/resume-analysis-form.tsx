@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/i18n/language-provider";
 
 type AnalysisFormFields = {
   jobTitle: string;
@@ -25,6 +26,7 @@ type AnalysisFormFields = {
 };
 
 export function ResumeAnalysisForm() {
+  const { locale, t } = useLanguage();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,10 +53,10 @@ export function ResumeAnalysisForm() {
       const payload = (await response.json()) as { id?: string; message?: string };
 
       if (!response.ok) {
-        throw new Error(payload.message ?? "Could not create the analysis.");
+        throw new Error(payload.message ?? t("form.error"));
       }
 
-      toast.success(payload.message ?? "Analysis completed and saved.");
+      toast.success(payload.message ?? t("form.success"));
       reset();
       setSelectedFile(null);
       if (fileInputRef.current) {
@@ -65,7 +67,7 @@ export function ResumeAnalysisForm() {
         router.push(`/dashboard/analyses/${payload.id}`);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not create the analysis.");
+      toast.error(error instanceof Error ? error.message : t("form.error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -83,11 +85,12 @@ export function ResumeAnalysisForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>New CV analysis</CardTitle>
-        <CardDescription>Upload PDF/DOCX, paste the job description, and generate ATS insights.</CardDescription>
+        <CardTitle>{t("form.title")}</CardTitle>
+        <CardDescription>{t("form.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form ref={formRef} onSubmit={handleSubmit} className="grid gap-5">
+          <input type="hidden" name="locale" value={locale} />
           <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
             <div
               className={cn(
@@ -130,16 +133,16 @@ export function ResumeAnalysisForm() {
                     }}
                   >
                     <X className="size-4" aria-hidden="true" />
-                    Remove
+                    {t("common.remove")}
                   </Button>
                 </div>
               ) : (
                 <>
                   <FileUp className="size-9 text-primary" aria-hidden="true" />
-                  <p className="mt-4 font-medium">Drop PDF or DOCX</p>
-                  <p className="mt-1 text-sm text-muted-foreground">5MB max. TXT is also supported for quick tests.</p>
+                  <p className="mt-4 font-medium">{t("form.drop")}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("form.fileHint")}</p>
                   <Button type="button" className="mt-5" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                    Select file
+                    {t("form.selectFile")}
                   </Button>
                 </>
               )}
@@ -147,15 +150,15 @@ export function ResumeAnalysisForm() {
 
             <div className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="job-title">Target role</Label>
-                <Input id="job-title" placeholder="Senior Frontend Engineer" {...register("jobTitle")} />
+                <Label htmlFor="job-title">{t("form.targetRole")}</Label>
+                <Input id="job-title" placeholder={t("form.targetRolePlaceholder")} {...register("jobTitle")} />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="job-description">Job description</Label>
+                <Label htmlFor="job-description">{t("form.jobDescription")}</Label>
                 <Textarea
                   id="job-description"
                   className="min-h-44 resize-none"
-                  placeholder="Paste the job description here..."
+                  placeholder={t("form.jobDescriptionPlaceholder")}
                   {...register("jobDescription", { required: true })}
                 />
               </div>
@@ -163,11 +166,11 @@ export function ResumeAnalysisForm() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="resume-text">Fallback resume text</Label>
+            <Label htmlFor="resume-text">{t("form.fallback")}</Label>
             <Textarea
               id="resume-text"
               className="min-h-36 resize-none"
-              placeholder="Paste your CV text here if you want to test without a file."
+              placeholder={t("form.fallbackPlaceholder")}
               {...register("resumeText")}
             />
           </div>
@@ -179,7 +182,7 @@ export function ResumeAnalysisForm() {
               ) : (
                 <Sparkles className="size-4" aria-hidden="true" />
               )}
-              {isSubmitting ? "Analyzing CV..." : "Analyze CV"}
+              {isSubmitting ? t("form.analyzing") : t("form.analyze")}
             </Button>
           </div>
         </form>

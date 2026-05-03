@@ -12,6 +12,7 @@ export async function createResumeAnalysisFromFormData(user: User, formData: For
   const pastedResumeText = String(formData.get("resumeText") ?? "");
   const jobDescription = String(formData.get("jobDescription") ?? "");
   const jobTitle = String(formData.get("jobTitle") ?? "").trim();
+  const locale = formData.get("locale") === "es" ? "es" : "en";
 
   const hasPastedResumeText = pastedResumeText.trim().length > 0;
   const hasFile = resumeFile instanceof File && resumeFile.size > 0;
@@ -24,6 +25,7 @@ export async function createResumeAnalysisFromFormData(user: User, formData: For
     resumeText,
     jobDescription,
     jobTitle: jobTitle || undefined,
+    locale,
     resumeFileName: hasFile ? resumeFile.name : "pasted-resume.txt",
     resumeMimeType: hasFile ? resumeFile.type : "text/plain",
   });
@@ -36,6 +38,7 @@ export async function createResumeAnalysisFromFormData(user: User, formData: For
     resumeText: input.resumeText,
     jobDescription: input.jobDescription,
     jobTitle: input.jobTitle,
+    locale: input.locale,
   });
 
   console.info("[CVPilot] create analysis: saving to database");

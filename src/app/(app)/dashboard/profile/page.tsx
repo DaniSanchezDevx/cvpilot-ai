@@ -1,13 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ProfileCard } from "@/components/profile/profile-card";
 import { getPrisma } from "@/lib/db/prisma";
 import { upsertUserProfile } from "@/lib/auth/user-profile";
 
@@ -22,27 +14,7 @@ export default async function ProfilePage() {
 
   return (
     <main className="mx-auto grid w-full max-w-4xl gap-6 p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>Your account and usage information.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-2">
-            <Label>Name</Label>
-            <Input readOnly value={dbUser?.name ?? ""} />
-          </div>
-          <div className="grid gap-2">
-            <Label>Email</Label>
-            <Input readOnly value={dbUser?.email ?? ""} />
-          </div>
-          <div className="grid gap-2">
-            <Label>Saved analyses</Label>
-            <Input readOnly value={analysisCount} />
-          </div>
-        </CardContent>
-      </Card>
+      <ProfileCard name={dbUser?.name ?? ""} email={dbUser?.email ?? ""} analysisCount={analysisCount} />
     </main>
   );
 }
-

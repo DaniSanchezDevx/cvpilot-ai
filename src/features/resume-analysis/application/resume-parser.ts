@@ -108,9 +108,36 @@ export function createDraftScore(profile: ResumeProfile, keywords: KeywordAnalys
   };
 }
 
-export function createHeuristicSuggestions(profile: ResumeProfile, keywords: KeywordAnalysis): AiSuggestion[] {
+export function createHeuristicSuggestions(
+  profile: ResumeProfile,
+  keywords: KeywordAnalysis,
+  locale: "en" | "es" = "en",
+): AiSuggestion[] {
   const primarySkill = profile.skills[0] ?? "core technical skills";
   const missingKeyword = keywords.missing[0] ?? "role-specific keywords";
+
+  if (locale === "es") {
+    return [
+      {
+        category: "experience",
+        before: "Trabaje en proyectos y APIs",
+        after: `Desarrolle proyectos con ${primarySkill} aportando mayor ownership, resultados medibles y detalles de implementacion listos para produccion.`,
+        reason: "Sustituye una responsabilidad vaga por alcance, accion e impacto.",
+      },
+      {
+        category: "keywords",
+        before: "Seccion de skills generica",
+        after: `Incluye evidencias de ${missingKeyword} mediante un proyecto concreto, una herramienta o un resultado de negocio.`,
+        reason: "Las keywords faltantes deben aparecer de forma natural en bullets de experiencia, no solo en una lista de skills.",
+      },
+      {
+        category: "summary",
+        before: "Resumen profesional sin alineacion con el rol objetivo",
+        after: `Orienta el resumen hacia ${profile.technologies.slice(0, 3).join(", ") || "tecnologias relevantes"} y resultados medibles del rol objetivo.`,
+        reason: "Los recruiters revisan primero el resumen para validar encaje, seniority y especializacion.",
+      },
+    ];
+  }
 
   return [
     {
@@ -134,8 +161,25 @@ export function createHeuristicSuggestions(profile: ResumeProfile, keywords: Key
   ];
 }
 
-export function createHeuristicOptimizedResume(profile: ResumeProfile, keywords: KeywordAnalysis): OptimizedResume {
+export function createHeuristicOptimizedResume(
+  profile: ResumeProfile,
+  keywords: KeywordAnalysis,
+  locale: "en" | "es" = "en",
+): OptimizedResume {
   const skills = Array.from(new Set([...profile.skills, ...keywords.important.slice(0, 8).map(capitalize)]));
+
+  if (locale === "es") {
+    return {
+      professionalSummary: `${profile.name ?? "Candidato"} es un perfil orientado a resultados con experiencia en ${skills.slice(0, 4).join(", ") || "los requisitos del rol"}. Enfocado en convertir necesidades de negocio en soluciones fiables, medibles y listas para produccion.`,
+      experienceBullets: [
+        `Mejore la calidad de entrega aplicando ${skills.slice(0, 3).join(", ") || "habilidades tecnicas relevantes"} en flujos de trabajo reales.`,
+        "Colabore con equipos multidisciplinares para transformar requisitos ambiguos en hitos claros de implementacion.",
+        "Refuerza la alineacion del CV destacando impacto medible, ownership y keywords especificas del puesto.",
+      ],
+      skills: skills.slice(0, 16),
+      interviewFocus: keywords.important.slice(0, 6).map(capitalize),
+    };
+  }
 
   return {
     professionalSummary: `${profile.name ?? "Candidate"} is a results-oriented professional with experience across ${skills.slice(0, 4).join(", ") || "target role requirements"}. Focused on translating business needs into reliable, measurable delivery.`,

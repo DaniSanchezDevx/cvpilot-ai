@@ -8,6 +8,7 @@ import { upsertUserProfile } from "@/lib/auth/user-profile";
 
 export async function optimizeResumeAction(formData: FormData) {
   const analysisId = String(formData.get("analysisId") ?? "");
+  const locale = formData.get("locale") === "es" ? "es" : "en";
   const user = await currentUser();
 
   if (!user || !analysisId) {
@@ -30,6 +31,7 @@ export async function optimizeResumeAction(formData: FormData) {
     resumeText: existing.resumeText,
     jobDescription: existing.jobDescription,
     jobTitle: existing.jobTitle ?? undefined,
+    locale,
   });
 
   await getPrisma().resumeAnalysis.update({
@@ -48,4 +50,3 @@ export async function optimizeResumeAction(formData: FormData) {
   revalidatePath(`/dashboard/analyses/${existing.id}`);
   revalidatePath("/dashboard");
 }
-

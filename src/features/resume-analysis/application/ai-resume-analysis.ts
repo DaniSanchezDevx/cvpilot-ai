@@ -70,8 +70,10 @@ export async function generateResumeAnalysis(input: {
   resumeText: string;
   jobDescription: string;
   jobTitle?: string;
+  locale?: "en" | "es";
 }): Promise<AiResumeAnalysisResult> {
-  const fallback = createFallbackAnalysis(input.resumeText, input.jobDescription);
+  const locale = input.locale ?? "en";
+  const fallback = createFallbackAnalysis(input.resumeText, input.jobDescription, locale);
 
   if (!env.OPENAI_API_KEY) {
     return fallback;
@@ -85,6 +87,9 @@ export async function generateResumeAnalysis(input: {
         "Analyze the resume against the job description. Be practical, specific, and honest.",
         "Do not invent credentials, employers, education, certifications, or exact metrics.",
         "When suggesting metrics, phrase them as measurable placeholders only if the resume lacks data.",
+        locale === "es"
+          ? "Write all user-facing text in Spanish. Keep technical keywords such as React, Next.js, Docker, API, ATS, PostgreSQL, and TypeScript unchanged."
+          : "Write all user-facing text in English.",
         "Return only data that fits the JSON schema.",
       ].join(" "),
       input: [
@@ -179,7 +184,11 @@ export async function generateResumeAnalysis(input: {
   }
 }
 
-function createFallbackAnalysis(resumeText: string, jobDescription: string): AiResumeAnalysisResult {
+function createFallbackAnalysis(
+  resumeText: string,
+  jobDescription: string,
+  locale: "en" | "es",
+): AiResumeAnalysisResult {
   const profile = extractResumeProfile(resumeText);
   const keywords = analyzeKeywords(resumeText, jobDescription);
   const score = createDraftScore(profile, keywords);
@@ -188,13 +197,20 @@ function createFallbackAnalysis(resumeText: string, jobDescription: string): AiR
     score,
     keywords,
     profile,
-    suggestions: createHeuristicSuggestions(profile, keywords),
-    optimizedResume: createHeuristicOptimizedResume(profile, keywords),
-    insights: [
-      "OpenAI is not configured, so this analysis uses deterministic local heuristics.",
-      "Add missing keywords naturally inside achievement bullets.",
-      "Prioritize measurable outcomes over responsibility-only wording.",
-    ],
+    suggestions: createHeuristicSuggestions(profile, keywords, locale),
+    optimizedResume: createHeuristicOptimizedResume(profile, keywords, locale),
+    insights:
+      locale === "es"
+        ? [
+            "OpenAI no esta configurado, asi que este analisis usa heuristicas locales deterministas.",
+            "Incluye las keywords faltantes de forma natural dentro de bullets de logros.",
+            "Prioriza resultados medibles por encima de frases centradas solo en responsabilidades.",
+          ]
+        : [
+            "OpenAI is not configured, so this analysis uses deterministic local heuristics.",
+            "Add missing keywords naturally inside achievement bullets.",
+            "Prioritize measurable outcomes over responsibility-only wording.",
+          ],
     source: "heuristic",
   };
 }
@@ -219,4 +235,3 @@ function stringArraySchema() {
 function truncate(value: string, maxLength: number) {
   return value.length > maxLength ? `${value.slice(0, maxLength)}\n[truncated]` : value;
 }
-
